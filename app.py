@@ -7,7 +7,6 @@ import numpy as np
 # Set page configuration
 st.set_page_config(
     page_title="Women's Hockey Analytics Dashboard",
-    page_icon="🏒",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -191,7 +190,7 @@ def get_coordinate_columns(df):
 
 def plot_all_events_map(df):
     """Create a comprehensive map showing all events with coordinates"""
-    st.markdown('<div class="section-header">🗺️ All Events Map</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">All Events Map</div>', unsafe_allow_html=True)
     
     # Validate coordinates for the entire dataset
     if not validate_coordinates(df, "all events"):
@@ -361,7 +360,7 @@ def plot_all_events_map(df):
 
 def plot_shot_goal_map(df):
     """Create shot and goal map visualization"""
-    st.markdown('<div class="section-header">📊 Shot & Goal Map</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Shot & Goal Map</div>', unsafe_allow_html=True)
     
     # Filter for shot events
     shot_events = ['Shot', 'Goal']
@@ -502,7 +501,7 @@ def plot_shot_goal_map(df):
 
 def plot_passing_network(df):
     """Create passing network visualization"""
-    st.markdown('<div class="section-header">🔄 Passing Network</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Passing Network</div>', unsafe_allow_html=True)
     
     # Filter for pass events
     pass_df = df[df['Event'] == 'Play'].copy()
@@ -581,7 +580,7 @@ def plot_passing_network(df):
 
 def plot_takeaways(df):
     """Create takeaways visualization"""
-    st.markdown('<div class="section-header">🎯 Takeaways</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Takeaways</div>', unsafe_allow_html=True)
     
     # Filter for takeaway events
     takeaway_df = df[df['Event'] == 'Takeaway'].copy()
@@ -769,7 +768,7 @@ def plot_takeaways(df):
 
 def plot_puck_recoveries(df):
     """Create puck recoveries visualization"""
-    st.markdown('<div class="section-header">🏒 Puck Recoveries</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Puck Recoveries</div>', unsafe_allow_html=True)
     
     # Filter for puck recovery events
     recovery_df = df[df['Event'] == 'Puck Recovery'].copy()
@@ -866,7 +865,7 @@ def plot_puck_recoveries(df):
 
 def plot_dump_in_out(df):
     """Create dump in/out visualization"""
-    st.markdown('<div class="section-header">📤 Dump In / Dump Out</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Dump In / Dump Out</div>', unsafe_allow_html=True)
     
     # Filter for dump events
     dump_events = ['Dump In/Out']
@@ -1101,7 +1100,7 @@ def plot_dump_in_out(df):
 
 def plot_zone_entries(df):
     """Create zone entries visualization"""
-    st.markdown('<div class="section-header">🚪 Zone Entries</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Zone Entries</div>', unsafe_allow_html=True)
     
     # Filter for zone entry events
     entry_df = df[df['Event'] == 'Zone Entry'].copy()
@@ -1363,7 +1362,7 @@ def plot_zone_entries(df):
 
 def plot_faceoff_wins(df):
     """Create faceoff wins visualization"""
-    st.markdown('<div class="section-header">🎯 Faceoff Wins</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Faceoff Wins</div>', unsafe_allow_html=True)
     
     # Filter for faceoff events
     faceoff_df = df[df['Event'] == 'Faceoff Win'].copy()
@@ -1511,7 +1510,7 @@ def plot_faceoff_wins(df):
 
 def plot_penalties(df):
     """Create penalties visualization"""
-    st.markdown('<div class="section-header">🚨 Penalties</div>', unsafe_allow_html=True)
+    st.markdown('<div class="section-header">Penalties</div>', unsafe_allow_html=True)
     
     # Filter for penalty events
     penalty_df = df[df['Event'] == 'Penalty Taken'].copy()
@@ -1885,11 +1884,11 @@ def plot_penalties(df):
 
 def main():
     # Header
-    st.markdown('<div class="main-header">🏒 Women\'s Hockey Analytics Dashboard</div>', 
+    st.markdown('<div class="main-header">Women\'s Hockey Analytics Dashboard</div>', 
                 unsafe_allow_html=True)
     
     # Sidebar
-    st.sidebar.header("📁 Data Upload")
+    st.sidebar.header("Data Upload")
     uploaded_file = st.sidebar.file_uploader(
         "Upload CSV file", 
         type=['csv'],
@@ -1904,7 +1903,7 @@ def main():
         st.stop()
     
     # Display basic dataset info
-    st.sidebar.header("📊 Dataset Info")
+    st.sidebar.header("Dataset Info")
     st.sidebar.write(f"**Rows:** {len(df)}")
     st.sidebar.write(f"**Columns:** {len(df.columns)}")
     
@@ -1922,7 +1921,7 @@ def main():
     # Coordinate information
     x_col, y_col = get_coordinate_columns(df)
     if x_col and y_col:
-        st.sidebar.header("📍 Coordinate System")
+        st.sidebar.header("Coordinate System")
         st.sidebar.write("**Rink Dimensions:** 200' x 85'")
         st.sidebar.write("**X-axis:** Rink length (0-200 feet)")
         st.sidebar.write("**Y-axis:** Rink width (0-85 feet)")
@@ -1939,11 +1938,11 @@ def main():
         st.sidebar.write("• Neutral: 67 ≤ X ≤ 133")
         st.sidebar.write("• Offensive: X > 133")
     else:
-        st.sidebar.header("📍 Coordinate System")
+        st.sidebar.header("Coordinate System")
         st.sidebar.warning("No X,Y coordinates found in dataset")
     
     # Navigation
-    st.sidebar.header("🧭 Navigation")
+    st.sidebar.header("Navigation")
     option = st.sidebar.selectbox(
         "Choose Visualization:",
         ["All Events Map", "Shot & Goal Map", "Passing Network", "Takeaways", "Puck Recoveries", 
@@ -1951,7 +1950,7 @@ def main():
     )
     
     # Display selected data preview
-    st.sidebar.header("🔍 Data Preview")
+    st.sidebar.header("Data Preview")
     if st.sidebar.checkbox("Show data preview"):
         st.sidebar.dataframe(df.head(10), use_container_width=True)
     

@@ -27,7 +27,7 @@ def check_matplotlib_backend():
         return False
 
 def main():
-    print("🏒 Hockey Analytics Dashboard Launcher")
+    print("Hockey Analytics Dashboard Launcher")
     print("=" * 40)
     
     # Check what's available
@@ -41,7 +41,7 @@ def main():
     
     # Determine best option
     if streamlit_available:
-        print("🎯 Recommended: Streamlit Web App")
+        print("Recommended: Streamlit Web App")
         print("   - Best user experience")
         print("   - Interactive interface")
         print("   - File upload capability")
@@ -49,7 +49,7 @@ def main():
         
         choice = input("Launch Streamlit app? (y/n): ").lower().strip()
         if choice in ['y', 'yes', '']:
-            print("🚀 Launching Streamlit app...")
+            print("Launching Streamlit app...")
             try:
                 subprocess.run([sys.executable, "-m", "streamlit", "run", "app.py"])
             except KeyboardInterrupt:
@@ -57,7 +57,7 @@ def main():
             return
     
     # Fallback to standalone script
-    print("🎯 Alternative: Standalone Python Script")
+            print("Alternative: Standalone Python Script")
     print("   - Works in any Python environment")
     print("   - Command-line interface")
     print("   - Can save plots to files")
@@ -65,7 +65,7 @@ def main():
     
     choice = input("Launch standalone script? (y/n): ").lower().strip()
     if choice in ['y', 'yes', '']:
-        print("🚀 Launching standalone script...")
+                    print("Launching standalone script...")
         try:
             subprocess.run([sys.executable, "hockey_analytics.py"])
         except KeyboardInterrupt:

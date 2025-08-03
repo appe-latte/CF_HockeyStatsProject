@@ -123,7 +123,7 @@ def create_rink_plot():
 
 def plot_shot_goal_map(df, team=None, save_path=None):
     """Create shot and goal map visualization"""
-    print(f"\n📊 Shot & Goal Map Analysis")
+            print(f"\nShot & Goal Map Analysis")
     
     # Filter for shot events
     shot_events = ['Shot', 'Goal']
@@ -192,7 +192,7 @@ def plot_shot_goal_map(df, team=None, save_path=None):
     shot_percentage = (goals / total_shots * 100) if total_shots > 0 else 0
     shots_on_net = len(team_shots[team_shots['Event'] == 'Shot'])
     
-    print(f"\n📈 Shot Statistics for {team}:")
+            print(f"\nShot Statistics for {team}:")
     print(f"   Total Shots: {total_shots}")
     print(f"   Goals: {goals}")
     print(f"   Shot %: {shot_percentage:.1f}%")
@@ -268,7 +268,7 @@ def plot_passing_network(df, team=None, min_passes=2, save_path=None):
         unique_players = len(set(pass_counts['Player'].unique()) | set(pass_counts['Player 2'].unique()))
         avg_passes = pass_counts['Pass_Count'].mean()
         
-        print(f"\n📈 Passing Statistics for {team}:")
+        print(f"\nPassing Statistics for {team}:")
         print(f"   Total Passes: {total_passes}")
         print(f"   Active Players: {unique_players}")
         print(f"   Avg Passes per Connection: {avg_passes:.1f}")
@@ -286,7 +286,7 @@ def plot_passing_network(df, team=None, min_passes=2, save_path=None):
 
 def plot_takeaways(df, team=None, save_path=None):
     """Create takeaways visualization"""
-    print(f"\n🎯 Takeaways Analysis")
+            print(f"\nTakeaways Analysis")
     
     # Filter for takeaway events
     takeaway_df = df[df['Event'] == 'Takeaway'].copy()
@@ -348,7 +348,7 @@ def plot_takeaways(df, team=None, save_path=None):
     
     # Print statistics
     total_takeaways = len(team_takeaways)
-    print(f"\n📈 Takeaway Statistics for {team}:")
+            print(f"\nTakeaway Statistics for {team}:")
     print(f"   Total Takeaways: {total_takeaways}")
     
     if 'Player' in team_takeaways.columns:
@@ -543,7 +543,7 @@ def plot_zone_entries(df, team=None, entry_skaters=None, defenders=None, save_pa
     plt.close()
     
     # Entry statistics
-    print(f"\n🏒 Zone Entry Statistics:")
+            print(f"\nZone Entry Statistics:")
     total_entries = len(team_entries)
     print(f"   Total Zone Entries: {total_entries}")
     
@@ -591,7 +591,7 @@ def plot_zone_entries(df, team=None, entry_skaters=None, defenders=None, save_pa
 
 def plot_faceoff_wins(df, team=None, players=None, save_path=None):
     """Create faceoff wins visualization"""
-    print(f"\n🎯 Faceoff Wins Analysis")
+            print(f"\nFaceoff Wins Analysis")
     
     # Filter for faceoff events
     faceoff_df = df[df['Event'] == 'Faceoff Win'].copy()
@@ -699,7 +699,7 @@ def plot_faceoff_wins(df, team=None, players=None, save_path=None):
     plt.close()
     
     # Faceoff statistics
-    print(f"\n🏒 Faceoff Statistics:")
+            print(f"\nFaceoff Statistics:")
     total_faceoffs = len(team_faceoffs)
     print(f"   Total Faceoff Wins: {total_faceoffs}")
     
@@ -716,13 +716,13 @@ def plot_faceoff_wins(df, team=None, players=None, save_path=None):
     
     # Show faceoff winners breakdown
     if 'Player' in team_faceoffs.columns and len(team_faceoffs) > 0:
-        print(f"\n🏒 Faceoff Winners Breakdown:")
+        print(f"\nFaceoff Winners Breakdown:")
         player_faceoffs = team_faceoffs['Player'].value_counts()
         for player, wins in player_faceoffs.items():
             print(f"   {player}: {wins} wins")
         
         # Show detailed breakdown
-        print(f"\n🏒 Detailed Faceoff Breakdown:")
+        print(f"\nDetailed Faceoff Breakdown:")
         faceoff_details = team_faceoffs.groupby(['Player']).size().reset_index(name='Wins')
         faceoff_details = faceoff_details.sort_values('Wins', ascending=False)
         print(f"{'Player':<20} {'Wins':<10}")
@@ -823,7 +823,7 @@ def plot_penalties(df, team=None, players=None, save_path=None):
     
     # Print statistics
     total_penalties = len(team_penalties)
-    print(f"\n📈 Penalty Statistics for {team}:")
+            print(f"\nPenalty Statistics for {team}:")
     print(f"   Total Penalties: {total_penalties}")
     
     if 'Player' in team_penalties.columns and len(team_penalties) > 0:
@@ -870,7 +870,7 @@ def plot_penalties(df, team=None, players=None, save_path=None):
             print(f"   {player}: {count} penalties")
         
         # Show detailed breakdown
-        print(f"\n📊 Detailed Penalty Breakdown:")
+        print(f"\nDetailed Penalty Breakdown:")
         penalty_details = team_penalties.groupby(['Player', 'Detail 1']).size().reset_index(name='Count')
         penalty_details = penalty_details.sort_values('Count', ascending=False)
         for _, row in penalty_details.iterrows():
@@ -878,7 +878,7 @@ def plot_penalties(df, team=None, players=None, save_path=None):
         
         # Penalty location analysis
         if 'X' in team_penalties.columns and 'Y' in team_penalties.columns:
-            print(f"\n📍 Penalty Location Analysis:")
+            print(f"\nPenalty Location Analysis:")
             
             # Create rink plot for penalty locations
             fig, ax = create_rink_plot()
@@ -1021,7 +1021,7 @@ def plot_penalties(df, team=None, players=None, save_path=None):
             plt.close()
             
             # Zone analysis
-            print(f"\n🏒 Penalty Zone Analysis:")
+            print(f"\nPenalty Zone Analysis:")
             
             if compare_teams:
                 # Show zone analysis for each team
@@ -1116,11 +1116,11 @@ def plot_penalties(df, team=None, players=None, save_path=None):
         if save_path:
             csv_filename = f"{save_path}_penalty_details.csv"
             display_df.to_csv(csv_filename, index=False)
-            print(f"\n📄 Detailed penalty data saved to: {csv_filename}")
+            print(f"\nDetailed penalty data saved to: {csv_filename}")
 
 def show_dataset_info(df):
     """Display basic dataset information"""
-    print(f"\n📊 Dataset Information:")
+            print(f"\nDataset Information:")
     print(f"   Rows: {len(df)}")
     print(f"   Columns: {len(df.columns)}")
     print(f"   Column names: {', '.join(df.columns)}")
@@ -1141,7 +1141,7 @@ def interactive_menu(df):
     """Interactive menu for CLI mode"""
     while True:
         print(f"\n" + "="*50)
-        print(f"🏒 HOCKEY ANALYTICS DASHBOARD")
+        print(f"HOCKEY ANALYTICS DASHBOARD")
         print(f"="*50)
         print(f"1. Shot & Goal Map")
         print(f"2. Passing Network")
