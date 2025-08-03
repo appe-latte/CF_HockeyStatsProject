@@ -53,11 +53,11 @@ def main():
             try:
                 subprocess.run([sys.executable, "-m", "streamlit", "run", "app.py"])
             except KeyboardInterrupt:
-                print("\n👋 Streamlit app closed.")
+                print("\nStreamlit app closed.")
             return
     
     # Fallback to standalone script
-            print("Alternative: Standalone Python Script")
+    print("Alternative: Standalone Python Script")
     print("   - Works in any Python environment")
     print("   - Command-line interface")
     print("   - Can save plots to files")
@@ -65,14 +65,14 @@ def main():
     
     choice = input("Launch standalone script? (y/n): ").lower().strip()
     if choice in ['y', 'yes', '']:
-                    print("Launching standalone script...")
+        print("Launching standalone script...")
         try:
             subprocess.run([sys.executable, "hockey_analytics.py"])
         except KeyboardInterrupt:
-            print("\n👋 Standalone script closed.")
+            print("\nStandalone script closed.")
         return
     
-    print("❌ No option selected. Exiting.")
+    print("No option selected. Exiting.")
 
 if __name__ == "__main__":
     main() 
