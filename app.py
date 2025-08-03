@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
 import numpy as np
+import io
 
 # Set page configuration
 st.set_page_config(
@@ -14,6 +15,7 @@ st.set_page_config(
 # Custom CSS for better styling
 st.markdown("""
 <style>
+    /* Main header styling */
     .main-header {
         font-size: 2.5rem;
         font-weight: bold;
@@ -32,6 +34,92 @@ st.markdown("""
         padding: 1rem;
         border-radius: 0.5rem;
         border-left: 4px solid #1f77b4;
+    }
+    /* Sidebar background */
+    [data-testid="stSidebar"] {
+        background-color: #A9A9A9 !important;
+    }
+    /* Sidebar text color and weight for visibility */
+    [data-testid="stSidebar"] * {
+        color: #fff !important;
+        font-weight: bold !important;
+    }
+    /* Make 'Choose Visualization' label text inherit color for proper contrast */
+    .block-container label[for^="Choose Visualization"] {
+        color: inherit !important;
+        font-weight: bold !important;
+    }
+    /* Style the download button to be black with white text */
+    .stDownloadButton > button {
+        background-color: #23232b !important;
+        color: #fff !important;
+        border: none !important;
+    }
+    /* Main dashboard background and text color */
+    .main, .block-container {
+        background-color: #D7CFCE !important;
+        color: #222 !important;
+    }
+    .main *, .block-container * {
+        color: #222 !important;
+    }
+    /* Filter boxes background color and rounded corners */
+    input[type="text"], input[type="number"], input[type="search"], select, textarea, .stMultiSelect, .stSelectbox, .stTextInput, .stNumberInput, .stDateInput, .stTimeInput {
+        background-color: #F9F9F3 !important;
+        border-radius: 0.5rem !important;
+    }
+    /* Make select dropdown text and selected value white for dark backgrounds */
+    select, .stSelectbox div[role="combobox"], .stSelectbox span, .stSelectbox label {
+        color: #fff !important;
+    }
+    select option:checked, select option[selected], .stSelectbox div[role="combobox"] > span {
+        color: #fff !important;
+        background-color: #A9A9A9 !important;
+    }
+    /* Force selectbox dropdown and selected value text to white on dark backgrounds */
+    .stSelectbox div[role="combobox"],
+    .stSelectbox span,
+    .stSelectbox label,
+    .stSelectbox .css-1wa3eu0-placeholder,
+    .stSelectbox .css-1uccc91-single,
+    .stSelectbox .css-319lph-ValueContainer {
+        color: #fff !important;
+    }
+    .stSelectbox .css-1okebmr-indicatorSeparator {
+        background-color: #fff !important;
+    }
+    /* Fix selectbox so selected value is always visible in white */
+    .stSelectbox .css-1uccc91-single,
+    .stSelectbox .css-1wa3eu0-placeholder,
+    .stSelectbox .css-319lph-ValueContainer,
+    .stSelectbox .css-1dimb5e-singleValue {
+        color: #fff !important;
+    }
+    .stSelectbox .css-1okebmr-indicatorSeparator {
+        background-color: #fff !important;
+    }
+    .stSelectbox div[role="combobox"] {
+        background-color: #23232b !important;
+        color: #fff !important;
+    }
+    .stSelectbox input {
+        color: #fff !important;
+        caret-color: #fff !important;
+    }
+    /* Make all filter text (input, select, multiselect, etc.) white for dark backgrounds */
+    input[type="text"], input[type="number"], input[type="search"], select, textarea, .stMultiSelect, .stSelectbox, .stTextInput, .stNumberInput, .stDateInput, .stTimeInput {
+        color: #fff !important;
+    }
+    ::placeholder,
+    .stSelectbox .css-1wa3eu0-placeholder,
+    .stSelectbox ::placeholder,
+    .stSelectbox *::placeholder {
+        color: #fff !important;
+        opacity: 1 !important;
+    }
+    /* Make all button text white for visibility on dark backgrounds */
+    .stButton > button, .stButton > button * {
+        color: #fff !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -62,7 +150,7 @@ def load_data(uploaded_file=None):
 
 def create_rink_plot():
     """Create a hockey rink plot with proper dimensions"""
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 8), facecolor="#D7CFCE")
     
     # Rink dimensions (standard NHL rink: 200x85 feet)
     rink_length = 200
@@ -188,7 +276,7 @@ def get_coordinate_columns(df):
     else:
         return None, None
 
-def plot_all_events_map(df):
+def plot_all_events_map(df, return_fig=False):
     """Create a comprehensive map showing all events with coordinates"""
     st.markdown('<div class="section-header">All Events Map</div>', unsafe_allow_html=True)
     
@@ -278,87 +366,11 @@ def plot_all_events_map(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Event statistics
-    st.subheader("Event Statistics")
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        total_events = len(filtered_data)
-        st.metric("Total Events", total_events)
-    
-    with col2:
-        unique_players = filtered_data['Player'].nunique()
-        st.metric("Active Players", unique_players)
-    
-    with col3:
-        x_col, _ = get_coordinate_columns(filtered_data)
-        if x_col:
-            offensive_zone = len(filtered_data[filtered_data[x_col] > 133])
-            st.metric("Offensive Zone Events", offensive_zone)
-    
-    with col4:
-        x_col, _ = get_coordinate_columns(filtered_data)
-        if x_col:
-            defensive_zone = len(filtered_data[filtered_data[x_col] < 67])
-            st.metric("Defensive Zone Events", defensive_zone)
-    
-    # Event breakdown
-    st.subheader("Event Breakdown")
-    event_counts = filtered_data['Event'].value_counts()
-    
-    fig, ax = plt.subplots(figsize=(10, 6))
-    event_counts.plot(kind='bar', ax=ax, color=[event_colors.get(event, 'gray') for event in event_counts.index])
-    plt.title(f'Event Breakdown - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-    plt.xlabel('Event Type', fontsize=12, fontweight='bold')
-    plt.ylabel('Number of Events', fontsize=12, fontweight='bold')
-    plt.xticks(rotation=45, ha='right', fontsize=10)
-    plt.yticks(fontsize=10)
-    plt.grid(True, alpha=0.3, axis='y')
-    plt.tight_layout()
-    
-    st.pyplot(fig)
-    
-    # Zone analysis
-    x_col, _ = get_coordinate_columns(filtered_data)
-    if x_col:
-        st.subheader("Zone Analysis")
-        
-        # Define zones
-        filtered_data['Zone'] = filtered_data[x_col].apply(
-            lambda x: 'Offensive' if x > 133 else ('Neutral' if x >= 67 else 'Defensive')
-        )
-        
-        zone_counts = filtered_data['Zone'].value_counts()
-        
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            fig, ax = plt.subplots(figsize=(8, 6))
-            zone_counts.plot(kind='pie', ax=ax, autopct='%1.1f%%', startangle=90)
-            plt.title(f'Events by Zone - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-            plt.ylabel('')
-            plt.tight_layout()
-            st.pyplot(fig)
-        
-        with col2:
-            # Zone breakdown by event type
-            zone_event_counts = filtered_data.groupby(['Zone', 'Event']).size().unstack(fill_value=0)
-            
-            fig, ax = plt.subplots(figsize=(10, 6))
-            zone_event_counts.plot(kind='bar', ax=ax, stacked=True)
-            plt.title(f'Events by Zone and Type - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-            plt.xlabel('Zone', fontsize=12, fontweight='bold')
-            plt.ylabel('Number of Events', fontsize=12, fontweight='bold')
-            plt.xticks(rotation=0, fontsize=10)
-            plt.yticks(fontsize=10)
-            plt.legend(title='Event Type', bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.grid(True, alpha=0.3, axis='y')
-            plt.tight_layout()
-            st.pyplot(fig)
 
-def plot_shot_goal_map(df):
+def plot_shot_goal_map(df, return_fig=False):
     """Create shot and goal map visualization"""
     st.markdown('<div class="section-header">Shot & Goal Map</div>', unsafe_allow_html=True)
     
@@ -453,53 +465,11 @@ def plot_shot_goal_map(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Shot statistics based on filter
-    col1, col2, col3, col4 = st.columns(4)
-    
-    # Filter data based on event filter
-    if event_filter == "Both":
-        filtered_data = team_shots
-    elif event_filter == "Shots Only":
-        filtered_data = team_shots[team_shots['Event'] == 'Shot']
-    elif event_filter == "Goals Only":
-        filtered_data = team_shots[team_shots['Event'] == 'Goal']
-    
-    with col1:
-        total_events = len(filtered_data)
-        st.metric("Total Events", total_events)
-    
-    with col2:
-        if event_filter == "Both":
-            goals = len(team_shots[team_shots['Event'] == 'Goal'])
-            st.metric("Goals", goals)
-        elif event_filter == "Goals Only":
-            st.metric("Goals", total_events)
-        else:
-            st.metric("Goals", 0)
-    
-    with col3:
-        if event_filter == "Both":
-            total_shots = len(team_shots)
-            goals = len(team_shots[team_shots['Event'] == 'Goal'])
-            shot_percentage = (goals / total_shots * 100) if total_shots > 0 else 0
-            st.metric("Shot %", f"{shot_percentage:.1f}%")
-        elif event_filter == "Goals Only":
-            st.metric("Shot %", "100.0%")
-        else:
-            st.metric("Shot %", "0.0%")
-    
-    with col4:
-        if event_filter == "Both":
-            shots_on_net = len(team_shots[team_shots['Event'] == 'Shot'])
-            st.metric("Shots on Net", shots_on_net)
-        elif event_filter == "Shots Only":
-            st.metric("Shots on Net", total_events)
-        else:
-            st.metric("Shots on Net", 0)
 
-def plot_passing_network(df):
+def plot_passing_network(df, return_fig=False):
     """Create passing network visualization"""
     st.markdown('<div class="section-header">Passing Network</div>', unsafe_allow_html=True)
     
@@ -549,11 +519,11 @@ def plot_passing_network(df):
             plt.yticks(rotation=0, fontsize=10)
             plt.tight_layout()
             
-            st.pyplot(fig)
+            return fig, ax
         except Exception as e:
             st.error(f"Error creating heatmap: {str(e)}")
             st.info("This might be due to insufficient data or compatibility issues.")
-            return
+            return None, None
         
         # Pass statistics
         col1, col2, col3 = st.columns(3)
@@ -577,8 +547,13 @@ def plot_passing_network(df):
     
     else:
         st.warning("Player columns not found in the dataset.")
+        return None, None
 
-def plot_takeaways(df):
+    if return_fig:
+        return fig, ax
+    st.pyplot(fig)
+
+def plot_takeaways(df, return_fig=False):
     """Create takeaways visualization"""
     st.markdown('<div class="section-header">Takeaways</div>', unsafe_allow_html=True)
     
@@ -690,83 +665,11 @@ def plot_takeaways(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Takeaway statistics
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        total_takeaways = len(team_takeaways)
-        if selected_player == "All Players":
-            st.metric("Total Takeaways", total_takeaways)
-        else:
-            st.metric(f"{selected_player} Takeaways", total_takeaways)
-    
-    with col2:
-        if selected_player == "All Players" and 'Player' in team_takeaways.columns:
-            top_player = team_takeaways['Player'].value_counts().index[0]
-            top_player_takeaways = team_takeaways['Player'].value_counts().iloc[0]
-            st.metric("Top Takeaway Player", f"{top_player} ({top_player_takeaways})")
-        elif selected_player != "All Players":
-            st.metric("Player", selected_player)
-        else:
-            st.metric("Player", "N/A")
-    
-    with col3:
-        x_col, _ = get_coordinate_columns(team_takeaways)
-        if x_col:
-            # Calculate takeaway zones
-            rink_length = 200
-            offensive_zone = len(team_takeaways[team_takeaways[x_col] > rink_length * 0.67])
-            neutral_zone = len(team_takeaways[(team_takeaways[x_col] >= rink_length * 0.33) & 
-                                            (team_takeaways[x_col] <= rink_length * 0.67)])
-            defensive_zone = len(team_takeaways[team_takeaways[x_col] < rink_length * 0.33])
-            
-            if selected_player == "All Players":
-                st.metric("Offensive Zone Takeaways", offensive_zone)
-            else:
-                st.metric("Offensive Zone Takeaways", offensive_zone)
-    
-    # Show takeaway breakdown by player
-    if 'Player' in team_takeaways.columns:
-        if selected_player == "All Players":
-            st.subheader("Takeaway Breakdown by Player")
-            player_takeaways = team_takeaways['Player'].value_counts()
-            
-            # Create a proper bar chart with matplotlib for better formatting
-            fig, ax = plt.subplots(figsize=(10, 6))
-            player_takeaways.plot(kind='bar', ax=ax, color='purple', alpha=0.7)
-            plt.title(f'Takeaways by Player - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-            plt.xlabel('Player', fontsize=12, fontweight='bold')
-            plt.ylabel('Number of Takeaways', fontsize=12, fontweight='bold')
-            plt.xticks(rotation=45, ha='right', fontsize=10)
-            plt.yticks(fontsize=10)
-            plt.grid(True, alpha=0.3, axis='y')
-            plt.tight_layout()
-            
-            st.pyplot(fig)
-        else:
-            # Show individual player statistics
-            st.subheader(f"{selected_player} Takeaway Details")
-            
-            # Zone breakdown for individual player
-            x_col, _ = get_coordinate_columns(team_takeaways)
-            if x_col:
-                col1, col2, col3 = st.columns(3)
-                
-                with col1:
-                    offensive_zone = len(team_takeaways[team_takeaways[x_col] > 133])
-                    st.metric("Offensive Zone", offensive_zone)
-                
-                with col2:
-                    neutral_zone = len(team_takeaways[(team_takeaways[x_col] >= 67) & (team_takeaways[x_col] <= 133)])
-                    st.metric("Neutral Zone", neutral_zone)
-                
-                with col3:
-                    defensive_zone = len(team_takeaways[team_takeaways[x_col] < 67])
-                    st.metric("Defensive Zone", defensive_zone)
 
-def plot_puck_recoveries(df):
+def plot_puck_recoveries(df, return_fig=False):
     """Create puck recoveries visualization"""
     st.markdown('<div class="section-header">Puck Recoveries</div>', unsafe_allow_html=True)
     
@@ -822,48 +725,11 @@ def plot_puck_recoveries(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Recovery statistics
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        total_recoveries = len(team_recoveries)
-        st.metric("Total Recoveries", total_recoveries)
-    
-    with col2:
-        if 'Player' in team_recoveries.columns:
-            top_player = team_recoveries['Player'].value_counts().index[0]
-            top_player_recoveries = team_recoveries['Player'].value_counts().iloc[0]
-            st.metric("Top Recovery Player", f"{top_player} ({top_player_recoveries})")
-    
-    with col3:
-        x_col, _ = get_coordinate_columns(team_recoveries)
-        if x_col:
-            # Calculate recovery zones
-            rink_length = 200
-            offensive_zone = len(team_recoveries[team_recoveries[x_col] > rink_length * 0.67])
-            st.metric("Offensive Zone Recoveries", offensive_zone)
-    
-    # Show recovery breakdown by player
-    if 'Player' in team_recoveries.columns:
-        st.subheader("Recovery Breakdown by Player")
-        player_recoveries = team_recoveries['Player'].value_counts()
-        
-        # Create a proper bar chart with matplotlib for better formatting
-        fig, ax = plt.subplots(figsize=(10, 6))
-        player_recoveries.plot(kind='bar', ax=ax, color='orange', alpha=0.7)
-        plt.title(f'Puck Recoveries by Player - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-        plt.xlabel('Player', fontsize=12, fontweight='bold')
-        plt.ylabel('Number of Recoveries', fontsize=12, fontweight='bold')
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.grid(True, alpha=0.3, axis='y')
-        plt.tight_layout()
-        
-        st.pyplot(fig)
 
-def plot_dump_in_out(df):
+def plot_dump_in_out(df, return_fig=False):
     """Create dump in/out visualization"""
     st.markdown('<div class="section-header">Dump In / Dump Out</div>', unsafe_allow_html=True)
     
@@ -986,119 +852,11 @@ def plot_dump_in_out(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Dump statistics
-    col1, col2, col3, col4 = st.columns(4)
-    
-    with col1:
-        total_dumps = len(team_dumps)
-        if selected_outcome == "All Outcomes":
-            st.metric("Total Dumps", total_dumps)
-        else:
-            st.metric(f"Dumps {selected_outcome}", total_dumps)
-    
-    with col2:
-        if selected_outcome == "All Outcomes":
-            if 'Detail 1' in team_dumps.columns:
-                retained = len(team_dumps[team_dumps['Detail 1'] == 'Retained'])
-                st.metric("Dumps Retained", retained)
-            else:
-                st.metric("Dumps Retained", 0)
-        else:
-            st.metric("Success Rate", "100%" if selected_outcome == "Retained" else "0%")
-    
-    with col3:
-        if selected_outcome == "All Outcomes":
-            if 'Detail 1' in team_dumps.columns:
-                lost = len(team_dumps[team_dumps['Detail 1'] == 'Lost'])
-                st.metric("Dumps Lost", lost)
-            else:
-                st.metric("Dumps Lost", 0)
-        else:
-            # Calculate zone distribution for single outcome
-            x_col, _ = get_coordinate_columns(team_dumps)
-            if x_col:
-                offensive_zone = len(team_dumps[team_dumps[x_col] > 133])
-                st.metric("Offensive Zone", offensive_zone)
-    
-    with col4:
-        if selected_outcome == "All Outcomes":
-            if 'Detail 1' in team_dumps.columns:
-                retained = len(team_dumps[team_dumps['Detail 1'] == 'Retained'])
-                st.metric("Possession Retained", retained)
-        else:
-            # Show unique players for single outcome
-            unique_players = team_dumps['Player'].nunique()
-            st.metric("Active Players", unique_players)
-    
-    # Show possession details if available
-    if 'Detail 1' in team_dumps.columns:
-        st.subheader("Possession Details")
-        possession_details = team_dumps['Detail 1'].value_counts()
-        
-        # Create a proper bar chart with matplotlib for better formatting
-        fig, ax = plt.subplots(figsize=(10, 6))
-        possession_details.plot(kind='bar', ax=ax, color='green', alpha=0.7)
-        plt.title(f'Dump Possession Details - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-        plt.xlabel('Possession Outcome', fontsize=12, fontweight='bold')
-        plt.ylabel('Number of Dumps', fontsize=12, fontweight='bold')
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.grid(True, alpha=0.3, axis='y')
-        plt.tight_layout()
-        
-        st.pyplot(fig)
-    
-    # Player information section
-    st.subheader("Player Information")
-    
-    if selected_outcome == "All Outcomes":
-        # Show player breakdown for all outcomes
-        if 'Player' in team_dumps.columns:
-            player_dumps = team_dumps.groupby(['Player', 'Detail 1']).size().reset_index(name='Count')
-            player_dumps = player_dumps.pivot(index='Player', columns='Detail 1', values='Count').fillna(0)
-            player_dumps['Total'] = player_dumps.sum(axis=1)
-            player_dumps = player_dumps.sort_values('Total', ascending=False)
-            
-            st.write("**Dump Statistics by Player:**")
-            st.dataframe(player_dumps, use_container_width=True)
-            
-            # Show top performers
-            col1, col2 = st.columns(2)
-            with col1:
-                if 'Retained' in player_dumps.columns:
-                    top_retained = player_dumps.nlargest(5, 'Retained')[['Retained']]
-                    st.write("**Top Players - Dumps Retained:**")
-                    st.dataframe(top_retained, use_container_width=True)
-            
-            with col2:
-                if 'Lost' in player_dumps.columns:
-                    top_lost = player_dumps.nlargest(5, 'Lost')[['Lost']]
-                    st.write("**Top Players - Dumps Lost:**")
-                    st.dataframe(top_lost, use_container_width=True)
-    else:
-        # Show detailed player information for single outcome
-        if 'Player' in team_dumps.columns:
-            # Player breakdown for selected outcome
-            player_counts = team_dumps['Player'].value_counts().reset_index()
-            player_counts.columns = ['Player', f'{selected_outcome} Count']
-            
-            st.write(f"**Players with {selected_outcome} Dumps:**")
-            st.dataframe(player_counts, use_container_width=True)
-            
-            # Show top 5 players
-            top_players = player_counts.head(5)
-            st.write(f"**Top 5 Players - {selected_outcome} Dumps:**")
-            
-            for i, (_, row) in enumerate(top_players.iterrows(), 1):
-                player = row['Player']
-                count = row[f'{selected_outcome} Count']
-                st.write(f"{i}. **{player}** - {count} dumps")
-            
 
-
-def plot_zone_entries(df):
+def plot_zone_entries(df, return_fig=False):
     """Create zone entries visualization"""
     st.markdown('<div class="section-header">Zone Entries</div>', unsafe_allow_html=True)
     
@@ -1281,86 +1039,11 @@ def plot_zone_entries(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Entry statistics
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        total_entries = len(team_entries)
-        st.metric("Total Zone Entries", total_entries)
-    
-    with col2:
-        if 'Player' in team_entries.columns and len(team_entries) > 0:
-            top_player = team_entries['Player'].value_counts().index[0]
-            top_player_entries = team_entries['Player'].value_counts().iloc[0]
-            st.metric("Top Entry Player", f"{top_player} ({top_player_entries})")
-    
-    with col3:
-        if 'Detail 1' in team_entries.columns:
-            carried_entries = len(team_entries[team_entries['Detail 1'] == 'Carried'])
-            st.metric("Carried Entries", carried_entries)
-    
-    # Show entry type breakdown
-    if 'Detail 1' in team_entries.columns and len(team_entries) > 0:
-        st.subheader("Entry Type Breakdown")
-        entry_types = team_entries['Detail 1'].value_counts()
-        
-        # Create a proper bar chart with matplotlib for better formatting
-        fig, ax = plt.subplots(figsize=(10, 6))
-        entry_types.plot(kind='bar', ax=ax, color='blue', alpha=0.7)
-        plt.title(f'Zone Entry Types - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-        plt.xlabel('Entry Type', fontsize=12, fontweight='bold')
-        plt.ylabel('Number of Entries', fontsize=12, fontweight='bold')
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.grid(True, alpha=0.3, axis='y')
-        plt.tight_layout()
-        
-        st.pyplot(fig)
-        
-        # Show detailed entry breakdown
-        st.subheader("Detailed Zone Entry Breakdown")
-        entry_details = team_entries.groupby(['Player', 'Detail 1']).size().reset_index(name='Entries')
-        entry_details = entry_details.sort_values('Entries', ascending=False)
-        st.dataframe(entry_details, use_container_width=True)
-        
-        # Show defender matchup analysis
-        if 'Player 2' in team_entries.columns and len(team_entries) > 0:
-            st.subheader("Defender Matchup Analysis")
-            defender_analysis = team_entries.groupby(['Player 2']).size().reset_index(name='Entries Against')
-            defender_analysis = defender_analysis.sort_values('Entries Against', ascending=False)
-            st.dataframe(defender_analysis, use_container_width=True)
-    
-    # Player information section
-    st.subheader("Player Information")
-    
-    if 'Player' in team_entries.columns:
-        # Player breakdown
-        player_entries = team_entries['Player'].value_counts().reset_index()
-        player_entries.columns = ['Player', 'Zone Entries']
-        
-        st.write("**Zone Entries by Player:**")
-        st.dataframe(player_entries, use_container_width=True)
-        
-        # Show top 5 players
-        top_players = player_entries.head(5)
-        st.write("**Top 5 Players - Zone Entries:**")
-        
-        for i, (_, row) in enumerate(top_players.iterrows(), 1):
-            player = row['Player']
-            entries = row['Zone Entries']
-            st.write(f"{i}. **{player}** - {entries} entries")
-        
-        # Entry type breakdown by player
-        if 'Detail 1' in team_entries.columns:
-            st.write("**Entry Types by Player:**")
-            entry_type_player = team_entries.groupby(['Player', 'Detail 1']).size().reset_index(name='Count')
-            entry_type_player = entry_type_player.pivot(index='Player', columns='Detail 1', values='Count').fillna(0)
-            entry_type_player = entry_type_player.sort_values(entry_type_player.columns[0], ascending=False)
-            st.dataframe(entry_type_player, use_container_width=True)
 
-def plot_faceoff_wins(df):
+def plot_faceoff_wins(df, return_fig=False):
     """Create faceoff wins visualization"""
     st.markdown('<div class="section-header">Faceoff Wins</div>', unsafe_allow_html=True)
     
@@ -1461,54 +1144,11 @@ def plot_faceoff_wins(df):
     ax.set_xlim(0, 200)
     ax.set_ylim(0, 85)
     
+    if return_fig:
+        return fig, ax
     st.pyplot(fig)
-    
-    # Faceoff statistics
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        total_faceoffs = len(team_faceoffs)
-        st.metric("Total Faceoff Wins", total_faceoffs)
-    
-    with col2:
-        if 'Player' in team_faceoffs.columns and len(team_faceoffs) > 0:
-            top_player = team_faceoffs['Player'].value_counts().index[0]
-            top_player_wins = team_faceoffs['Player'].value_counts().iloc[0]
-            st.metric("Top Faceoff Winner", f"{top_player} ({top_player_wins})")
-    
-    with col3:
-        x_col, _ = get_coordinate_columns(team_faceoffs)
-        if x_col:
-            # Calculate faceoff zones
-            rink_length = 200
-            offensive_zone = len(team_faceoffs[team_faceoffs[x_col] > rink_length * 0.67])
-            st.metric("Offensive Zone Wins", offensive_zone)
-    
-    # Show faceoff winners breakdown
-    if 'Player' in team_faceoffs.columns and len(team_faceoffs) > 0:
-        st.subheader("Faceoff Winners Breakdown")
-        player_faceoffs = team_faceoffs['Player'].value_counts()
-        
-        # Create a proper bar chart with matplotlib for better formatting
-        fig, ax = plt.subplots(figsize=(10, 6))
-        player_faceoffs.plot(kind='bar', ax=ax, color='red', alpha=0.7)
-        plt.title(f'Faceoff Wins by Player - {selected_team}', fontsize=14, fontweight='bold', pad=20)
-        plt.xlabel('Player', fontsize=12, fontweight='bold')
-        plt.ylabel('Number of Faceoff Wins', fontsize=12, fontweight='bold')
-        plt.xticks(rotation=45, ha='right', fontsize=10)
-        plt.yticks(fontsize=10)
-        plt.grid(True, alpha=0.3, axis='y')
-        plt.tight_layout()
-        
-        st.pyplot(fig)
-        
-        # Show detailed faceoff breakdown
-        st.subheader("Detailed Faceoff Breakdown")
-        faceoff_details = team_faceoffs.groupby(['Player']).size().reset_index(name='Wins')
-        faceoff_details = faceoff_details.sort_values('Wins', ascending=False)
-        st.dataframe(faceoff_details, use_container_width=True)
 
-def plot_penalties(df):
+def plot_penalties(df, return_fig=False):
     """Create penalties visualization"""
     st.markdown('<div class="section-header">Penalties</div>', unsafe_allow_html=True)
     
@@ -1605,7 +1245,7 @@ def plot_penalties(df):
         plt.grid(True, alpha=0.3, axis='y')
         plt.tight_layout()
         
-        st.pyplot(fig)
+        return fig, ax
     
     # Show penalty breakdown by player
     if 'Player' in team_penalties.columns and len(team_penalties) > 0:
@@ -1623,8 +1263,8 @@ def plot_penalties(df):
         plt.grid(True, alpha=0.3, axis='y')
         plt.tight_layout()
         
-        st.pyplot(fig)
-        
+        return fig, ax
+    
             # Show detailed penalty breakdown
     st.subheader("Detailed Penalty Breakdown")
     penalty_details = team_penalties.groupby(['Player', 'Detail 1']).size().reset_index(name='Count')
@@ -1762,7 +1402,7 @@ def plot_penalties(df):
         ax.set_xlim(0, 200)
         ax.set_ylim(0, 85)
         
-        st.pyplot(fig)
+        return fig, ax
         
         # Zone analysis
         st.subheader("Penalty Zone Analysis")
@@ -1882,12 +1522,15 @@ def plot_penalties(df):
         mime="text/csv"
     )
 
+    if return_fig:
+        return fig, ax
+    st.pyplot(fig)
+
 def main():
     # Header
-    st.markdown('<div class="main-header">Women\'s Hockey Analytics Dashboard</div>', 
-                unsafe_allow_html=True)
-    
-    # Sidebar
+    st.markdown('<div class="main-header">Women\'s Hockey Analytics Dashboard</div>', unsafe_allow_html=True)
+
+    # Sidebar: Data Upload
     st.sidebar.header("Data Upload")
     uploaded_file = st.sidebar.file_uploader(
         "Upload CSV file", 
@@ -1918,64 +1561,91 @@ def main():
         for event, count in events.head(5).items():
             st.sidebar.write(f"• {event}: {count}")
     
-    # Coordinate information
-    x_col, y_col = get_coordinate_columns(df)
-    if x_col and y_col:
-        st.sidebar.header("Coordinate System")
-        st.sidebar.write("**Rink Dimensions:** 200' x 85'")
-        st.sidebar.write("**X-axis:** Rink length (0-200 feet)")
-        st.sidebar.write("**Y-axis:** Rink width (0-85 feet)")
-        
-        # Show coordinate ranges
-        x_range = f"{df[x_col].min():.0f} - {df[x_col].max():.0f}"
-        y_range = f"{df[y_col].min():.0f} - {df[y_col].max():.0f}"
-        st.sidebar.write(f"**X Range:** {x_range}")
-        st.sidebar.write(f"**Y Range:** {y_range}")
-        
-        # Zone information
-        st.sidebar.write("**Zones:**")
-        st.sidebar.write("• Defensive: X < 67")
-        st.sidebar.write("• Neutral: 67 ≤ X ≤ 133")
-        st.sidebar.write("• Offensive: X > 133")
-    else:
-        st.sidebar.header("Coordinate System")
-        st.sidebar.warning("No X,Y coordinates found in dataset")
-    
+    # Remove Coordinate System info
     # Navigation
     st.sidebar.header("Navigation")
     option = st.sidebar.selectbox(
         "Choose Visualization:",
-        ["All Events Map", "Shot & Goal Map", "Passing Network", "Takeaways", "Puck Recoveries", 
-         "Dump In / Dump Out", "Zone Entries", "Faceoff Wins", "Penalties"]
+        [
+            "All Events Map",
+            "Shot & Goal Map",
+            "Passing Network",
+            "Takeaways",
+            "Puck Recoveries",
+            "Dump In / Dump Out",
+            "Zone Entries",
+            "Faceoff Wins",
+            "Penalties"
+        ],
+        help="Select the type of analysis or visualization you want to see."
     )
-    
-    # Display selected data preview
-    st.sidebar.header("Data Preview")
-    if st.sidebar.checkbox("Show data preview"):
-        st.sidebar.dataframe(df.head(10), use_container_width=True)
-    
+
     # Main content area
     st.markdown("---")
-    
-    # Routing logic
+    st.markdown("### What would you like to analyze?")
+    st.markdown("Use the sidebar to select a visualization. Each chart below includes a description and export options for sharing with your team.")
+
+    # Routing logic with descriptions and export buttons
     if option == "All Events Map":
-        plot_all_events_map(df)
+        st.subheader("All Events Map")
+        st.markdown("Shows all tracked events on the rink. Useful for a high-level overview of activity.")
+        fig, ax = plot_all_events_map(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="all_events_map.png")
     elif option == "Shot & Goal Map":
-        plot_shot_goal_map(df)
+        st.subheader("Shot & Goal Map")
+        st.markdown("Visualizes where your team's shots and goals are coming from. Use to identify shooting hotspots and cold zones.")
+        fig, ax = plot_shot_goal_map(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="shot_goal_map.png")
     elif option == "Passing Network":
-        plot_passing_network(df)
+        st.subheader("Passing Network")
+        st.markdown("Shows player-to-player passing patterns. Useful for understanding team chemistry and puck movement.")
+        fig, ax = plot_passing_network(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="passing_network.png")
     elif option == "Takeaways":
-        plot_takeaways(df)
+        st.subheader("Takeaways")
+        st.markdown("Displays where your team is regaining puck possession. Helps identify defensive strengths.")
+        fig, ax = plot_takeaways(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="takeaways.png")
     elif option == "Puck Recoveries":
-        plot_puck_recoveries(df)
+        st.subheader("Puck Recoveries")
+        st.markdown("Shows where your team recovers loose pucks. Useful for tracking hustle and effort.")
+        fig, ax = plot_puck_recoveries(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="puck_recoveries.png")
     elif option == "Dump In / Dump Out":
-        plot_dump_in_out(df)
+        st.subheader("Dump In / Dump Out")
+        st.markdown("Analyzes dump plays and possession changes. Useful for evaluating transition strategies.")
+        fig, ax = plot_dump_in_out(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="dump_in_out.png")
     elif option == "Zone Entries":
-        plot_zone_entries(df)
+        st.subheader("Zone Entries")
+        st.markdown("Visualizes offensive zone entries. Helps track how your team gains the zone.")
+        fig, ax = plot_zone_entries(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="zone_entries.png")
     elif option == "Faceoff Wins":
-        plot_faceoff_wins(df)
+        st.subheader("Faceoff Wins")
+        st.markdown("Maps faceoff win locations. Useful for understanding puck possession off the draw.")
+        fig, ax = plot_faceoff_wins(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="faceoff_wins.png")
     elif option == "Penalties":
-        plot_penalties(df)
+        st.subheader("Penalties")
+        st.markdown("Shows penalty locations and types. Useful for identifying discipline issues and trends.")
+        fig, ax = plot_penalties(df, return_fig=True)
+        st.pyplot(fig)
+        st.download_button("Export as PNG", data=fig_to_bytes(fig), file_name="penalties.png")
+
+def fig_to_bytes(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return buf
 
 if __name__ == "__main__":
     main()

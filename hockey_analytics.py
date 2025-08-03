@@ -58,7 +58,7 @@ def load_data(file_path=None):
 
 def create_rink_plot():
     """Create a hockey rink plot with proper dimensions"""
-    fig, ax = plt.subplots(figsize=(12, 8))
+    fig, ax = plt.subplots(figsize=(12, 8), facecolor="#D7CFCE")
     
     # Rink dimensions (standard NHL rink: 200x85 feet)
     rink_length = 200
@@ -246,7 +246,7 @@ def plot_passing_network(df, team=None, min_passes=2, save_path=None):
         pass_matrix = pass_counts.pivot(index='Player', columns='Player 2', values='Pass_Count').fillna(0)
         
         # Create heatmap
-        fig, ax = plt.subplots(figsize=(12, 10))
+        fig, ax = plt.subplots(figsize=(12, 10), facecolor="#D7CFCE")
         sns.heatmap(pass_matrix, annot=True, cmap='Blues', fmt='g', 
                    cbar_kws={'label': 'Number of Passes', 'fontsize': 12})
         plt.title(f'Passing Network - {team}', fontsize=16, fontweight='bold', pad=20)
@@ -843,7 +843,7 @@ def plot_penalties(df, team=None, players=None, save_path=None):
             print(f"   {penalty_type}: {count}")
         
         # Create bar chart
-        fig, ax = plt.subplots(figsize=(10, 6))
+        fig, ax = plt.subplots(figsize=(10, 6), facecolor="#D7CFCE")
         penalty_types.plot(kind='bar', ax=ax, color='red', alpha=0.7)
         plt.title(f'Penalties by Type - {team}', fontsize=14, fontweight='bold', pad=20)
         plt.xlabel('Infraction Type', fontsize=12, fontweight='bold')
